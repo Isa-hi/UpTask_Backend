@@ -5,6 +5,14 @@ export class ProjectController {
 
     static createProject = async (req: Request, res: Response) => {
         const project = new Project(req.body);
+
+        // this is a fake error
+        /* if(true){
+            const error = new Error('This is a fake error');         
+            res.status(400).send({error: error.message});
+            return;
+        } */
+
         try {
             await project.save();
             res.send('Project created successfully');
