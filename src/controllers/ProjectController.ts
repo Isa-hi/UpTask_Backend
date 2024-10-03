@@ -6,13 +6,6 @@ export class ProjectController {
     static createProject = async (req: Request, res: Response) => {
         const project = new Project(req.body);
 
-        // this is a fake error
-        /* if(true){
-            const error = new Error('This is a fake error');         
-            res.status(400).send({error: error.message});
-            return;
-        } */
-
         try {
             await project.save();
             res.send('Project created successfully');
@@ -23,7 +16,7 @@ export class ProjectController {
 
     static getAllProjects = async (req: Request, res: Response) => {
         try {
-            const projects = await Project.find({});
+            const projects = await Project.find({});           
             res.json(projects);
         } catch (error) {
             console.log(error);
@@ -35,7 +28,7 @@ export class ProjectController {
     static getProjectById = async (req: Request, res: Response) => {
         const { id } = req.params;
         try {
-            const project = await Project.findById(id);
+            const project = await Project.findById(id).populate('tasks');
             if (!project) {
                 res.status(404).send('Project not found');
                 return;
