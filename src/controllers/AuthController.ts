@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import User from "../models/User";
-import { hashPassword } from "../utils/auth";
+import { comparePasswords, hashPassword } from "../utils/auth";
 import { generateToken } from "../utils/token";
 import Token from "../models/Token";
 import { AuthEmail } from "../emails/AuthEmail";
@@ -27,11 +27,11 @@ export class AuthController {
       token.user = user.id;
 
       // Send the email
-      AuthEmail.sendVerificationEmail({ 
-        email: user.email, 
+      AuthEmail.sendVerificationEmail({
+        email: user.email,
         user: user.name,
         token: token.token,
-      })
+      });
 
       await Promise.allSettled([user.save(), token.save()]);
       res.send(
@@ -47,28 +47,65 @@ export class AuthController {
       const { token } = req.body;
 
       // Find the token in the database
-      const tokenExists = await Token.findOne({ token })
-      if(!tokenExists) {
-        const error = new Error('Invalid token')
-        res.status(401).json({ error: error.message });
+      const tokenExists = await Token.findOne({ token });
+      if (!tokenExists) {
+        const error = new Error("Invalid token");
+        res.status(404).json({ error: error.message });
         return;
       }
 
       const user = await User.findById(tokenExists.user);
-      if(!user) {
-        const error = new Error('User not found')
+      if (!user) {
+        const error = new Error("User not found");
         res.status(404).json({ error: error.message });
         return;
       }
 
       user.confirmed = true;
-      
+
       await Promise.allSettled([user.save(), tokenExists.deleteOne()]);
-      res.send('Account verified successfully');
+      res.send("Account verified successfully");
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  }
+  };
 
+  static login = async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
+      const user = await User.findOne({ email });
+      if (!user) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+      if (!user.confirmed) {
+        // Generate a token for email verification
+        const token = new Token();
+        token.token = generateToken();
+        token.user = user.id;
+
+        // Send the email
+        AuthEmail.sendVerificationEmail({
+          email: user.email,
+          user: user.name,
+          token: token.token,
+        });
+
+        const error = new Error("Account not verified. Check your email");
+        res.status(401).json({ error: error.message });
+        return;
+      }
+
+      const passwordMatch = await comparePasswords(password, user.password);
+
+      if (!passwordMatch) {
+        res.status(401).json({ error: "Invalid password" });
+        return;
+      }
+      
+      console.log(user);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
 }
-
