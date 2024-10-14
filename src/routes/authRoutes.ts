@@ -43,4 +43,10 @@ router.post('/login',
   AuthController.login
 )
 
+router.post('/request-code',
+  body('email').isEmail().withMessage('Invalid email'),
+  handleInputErrors,
+  AuthController.resendVerificationEmail
+)
+
 export default router;

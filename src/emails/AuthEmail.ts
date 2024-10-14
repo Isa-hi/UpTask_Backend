@@ -14,7 +14,7 @@ export class AuthEmail {
             subject: "Email verification",
             html: `<p>Hello ${user.user},</p>
             <p>Thank you for creating an account with UpTask. Please verify your email by clicking the link below:</p>
-            <a href="">Verify Email</a>
+            <a href="${process.env.FRONTEND_URL}/auth/confirm-account">Click here and enter your token</a>
             <p>Your verification token is: <b>${user.token}</b></p>
             <p>This token will expire in 10 minutes.</p>`,
           })

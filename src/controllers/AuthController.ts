@@ -91,6 +91,7 @@ export class AuthController {
           token: token.token,
         });
 
+        await Promise.allSettled([user.save(), token.save()]);
         const error = new Error("Account not verified. Check your email");
         res.status(401).json({ error: error.message });
         return;
@@ -104,6 +105,43 @@ export class AuthController {
       }
       
       console.log(user);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  static resendVerificationEmail = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+
+      // Check if the user already exists
+      const user = await User.findOne({ email });
+      if(!user) {
+        res.status(404).json({ error: "User does not exists" });
+        return;
+      }
+
+      if(user.confirmed) {
+        res.status(403).json({ error: "Account already verified" });
+        return;
+      }
+
+      // Generate a token for email verification
+      const token = new Token();
+      token.token = generateToken();
+      token.user = user.id;
+
+      // Send the email
+      AuthEmail.sendVerificationEmail({
+        email: user.email,
+        user: user.name,
+        token: token.token,
+      });
+
+      await Promise.allSettled([user.save(), token.save()]);
+      res.send(
+        "New token created. Check your email to verify your account"
+      );
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
