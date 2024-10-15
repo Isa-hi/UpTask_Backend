@@ -146,4 +146,78 @@ export class AuthController {
       res.status(500).json({ error: error.message });
     }
   };
+
+  static requestPasswordReset = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+
+      // Check if the user already exists
+      const user = await User.findOne({ email });
+      if(!user) {
+        res.status(404).json({ error: "User does not exists" });
+        return;
+      }
+
+      // Generate a token for email verification
+      const token = new Token();
+      token.token = generateToken();
+      token.user = user.id;
+
+      // Send the email
+      AuthEmail.sendPasswordResetEmail({
+        email: user.email,
+        user: user.name,
+        token: token.token,
+      });
+      await token.save(); 
+
+      res.send(
+        "Password reset token created. Check your email to reset your password"
+      );
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  static validatePasswordResetToken = async (req: Request, res: Response) => {
+    try {
+      const { token } = req.body;
+       // Find the token in the database
+       const tokenExists = await Token.findOne({ token });
+       if (!tokenExists) {
+         const error = new Error("Invalid token");
+         res.status(404).json({ error: error.message });
+         return;
+       }
+        res.send("Token is valid, you can reset your password");
+       
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  static updatePassword = async (req: Request, res: Response) => {
+    try {
+      const { token } = req.params;
+      const { password } = req.body;
+
+      // Find the token in the database
+      const tokenExists = await Token.findOne({ token });
+      if (!tokenExists) {
+        const error = new Error("Invalid token");
+        res.status(404).json({ error: error.message });
+        return;
+      }
+      const user = await User.findById(tokenExists.user)     
+      const hashedPassword = await hashPassword(password);      
+      user.password = hashedPassword;
+      
+      await Promise.allSettled([user.save(), tokenExists.deleteOne()]);
+      res.send("Password updated successfully");
+      
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+      
+    }
+  }
 }

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { AuthController } from "../controllers/AuthController";
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 import { handleInputErrors } from "../middleware/validation";
 
 const router = Router();
@@ -47,6 +47,35 @@ router.post('/request-code',
   body('email').isEmail().withMessage('Invalid email'),
   handleInputErrors,
   AuthController.resendVerificationEmail
+)
+
+router.post('/forgot-password',
+  body('email').isEmail().withMessage('Invalid email'),
+  handleInputErrors,
+  AuthController.requestPasswordReset
+)
+
+router.post('/validate-token',
+  body('token').isString().notEmpty().withMessage('Token is required'),
+  handleInputErrors,
+  AuthController.validatePasswordResetToken
+)
+
+router.post('/update-password/:token',
+  param('token').isString().notEmpty().withMessage('Token is required'),
+  body('password')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long')
+    .notEmpty()
+    .withMessage('Password is required'),
+  body('password_confirmation').custom((value, { req }) => {
+    if (value !== req.body.password) {
+      throw new Error('Password confirmation does not match password');
+    }
+    return true;
+  }),
+  handleInputErrors,
+  AuthController.updatePassword
 )
 
 export default router;
