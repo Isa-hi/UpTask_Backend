@@ -5,12 +5,14 @@ import { handleInputErrors } from "../middleware/validation";
 import { TaskController } from "../controllers/TaskController";
 import { validateProjectExists } from "../middleware/project";
 import { validateTaskBelongsToProject, validateTaskExists } from "../middleware/task";
+import { authenticate } from "../middleware/auth";
 
 const router = Router();
 
 /* ROUTES FOR PROJECT */
 router.post(
   "/",
+  authenticate,
     body("projectName")
         .isString().withMessage("Name must be a string")
         .isLength({ min: 3 }).withMessage("Name must be at least 3 characters long")
