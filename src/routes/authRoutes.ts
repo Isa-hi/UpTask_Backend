@@ -79,4 +79,6 @@ router.post('/update-password/:token',
   AuthController.updatePassword
 )
 
+router.get('/user', authenticate, AuthController.user)
+
 export default router;

@@ -26,6 +26,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
             
             if(user) {
                 req.user = user;
+                next();
             } else {
                 res.status(404).send("User not found.");
                 return;
@@ -35,5 +36,4 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         res.status(401).send(error.message);
     }
 
-    next();
 }
