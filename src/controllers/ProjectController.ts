@@ -6,9 +6,9 @@ export class ProjectController {
     static createProject = async (req: Request, res: Response) => {
         const project = new Project(req.body);
 
-        console.log(req.user);
+        // Add manager to project
+        project.manager = req.user.id;
         
-
         try {
             await project.save();
             res.send('Project created successfully');
@@ -19,7 +19,11 @@ export class ProjectController {
 
     static getAllProjects = async (req: Request, res: Response) => {
         try {
-            const projects = await Project.find({});           
+            const projects = await Project.find({
+                $or: [
+                    { manager: {$in: req.user.id }}
+                ]
+            });           
             res.json(projects);
         } catch (error) {
             console.log(error);
@@ -33,7 +37,11 @@ export class ProjectController {
         try {
             const project = await Project.findById(id).populate('tasks');
             if (!project) {
-                res.status(404).send('Project not found');
+                res.status(404).json('Project not found');
+                return;
+            }
+            if(project.manager.toString() !== req.user.id.toString()) {
+                res.status(401).json('Unauthorized. Only the project manager can view this project');
                 return;
             }
             res.json(project);
@@ -50,6 +58,10 @@ export class ProjectController {
                 res.status(404).send('Project not found');
                 return;
             }
+            if(project.manager.toString() !== req.user.id.toString()) {
+                res.status(401).json('Unauthorized. Only the project manager can update this project');
+                return;
+            }
             project.save();
             res.send('Project updated successfully');
         } catch (error) {
@@ -63,6 +75,10 @@ export class ProjectController {
             const project = await Project.findById(id);
             if (!project) {
                 res.status(404).send('Project not found');
+                return;
+            }
+            if(project.manager.toString() !== req.user.id.toString()) {
+                res.status(401).json('Unauthorized. Only the project manager can delete this project');
                 return;
             }
             await project.deleteOne();

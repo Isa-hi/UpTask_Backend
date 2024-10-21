@@ -9,10 +9,11 @@ import { authenticate } from "../middleware/auth";
 
 const router = Router();
 
+router.use(authenticate);
+
 /* ROUTES FOR PROJECT */
 router.post(
   "/",
-  authenticate,
     body("projectName")
         .isString().withMessage("Name must be a string")
         .isLength({ min: 3 }).withMessage("Name must be at least 3 characters long")
