@@ -176,8 +176,7 @@ router.post(
   TeamController.findTeamMember
 );
 
-router.get("/:projectId/team",
-   TeamController.getTeamMembers);
+router.get("/:projectId/team", TeamController.getTeamMembers);
 
 router.post(
   "/:projectId/team",
@@ -188,7 +187,7 @@ router.post(
     .withMessage("ID is required"),
   handleInputErrors,
   TeamController.addTeamMemberByID
-)
+);
 
 router.delete(
   "/:projectId/team/:userId",
@@ -199,7 +198,7 @@ router.delete(
     .withMessage("ID is required"),
   handleInputErrors,
   TeamController.removeTeamMemberByID
-)
+);
 
 /** ROUTES FOR NOTES */
 router.post(
@@ -215,5 +214,7 @@ router.post(
   handleInputErrors,
   NoteController.createNote
 );
+
+router.get("/:projectId/tasks/:taskId/notes", NoteController.getTaskNotes);
 
 export default router;

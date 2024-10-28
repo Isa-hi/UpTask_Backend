@@ -26,7 +26,8 @@ export class TaskController {
 
   static getTaskById = async (req: Request, res: Response) => {
     try {
-      const task = await Task.findById(req.task).populate({path: "completedBy.user", select: "id name email"});
+      const task = await Task.findById(req.task).populate({path: "completedBy.user", select: "id name email"})
+      .populate({path: 'notes', populate: {path: 'createdBy', select: 'id name email'}});
       res.json(task);
     } catch (error) {
       res.status(500).send("Error fetching task");
@@ -60,7 +61,7 @@ export class TaskController {
       req.task.status = status;
 
       req.task.completedBy.push({ user: req.user.id, status });
-      
+
       await req.task.save();
       res.send("Task status updated successfully");
     } catch (error) {
