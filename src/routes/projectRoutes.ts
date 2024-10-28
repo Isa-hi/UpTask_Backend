@@ -10,6 +10,7 @@ import {
 } from "../middleware/task";
 import { authenticate, hasAuthorization } from "../middleware/auth";
 import { TeamController } from "../controllers/TeamController";
+import { NoteController } from "../controllers/NoteController";
 
 const router = Router();
 
@@ -199,5 +200,20 @@ router.delete(
   handleInputErrors,
   TeamController.removeTeamMemberByID
 )
+
+/** ROUTES FOR NOTES */
+router.post(
+  "/:projectId/tasks/:taskId/notes",
+  param("taskId").isMongoId().withMessage("Invalid task ID"),
+  body("content")
+    .isString()
+    .withMessage("Content must be a string")
+    .isLength({ min: 3 })
+    .withMessage("Content must be at least 3 characters long")
+    .notEmpty()
+    .withMessage("Content is required"),
+  handleInputErrors,
+  NoteController.createNote
+);
 
 export default router;
