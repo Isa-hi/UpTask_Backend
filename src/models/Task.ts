@@ -16,7 +16,8 @@ export interface ITask extends Document {
   description: string;
   project: Types.ObjectId;
   status: TaskStatus;
-  completedBy: {user: Types.ObjectId, status: TaskStatus}[];
+  completedBy: { user: Types.ObjectId; status: TaskStatus }[];
+  notes: Types.ObjectId[];
 }
 
 //Monngoose Schema for Project
@@ -44,16 +45,22 @@ const TaskSchema = new Schema(
     },
     completedBy: [
       {
-        user: { 
-            type: Types.ObjectId,
-            ref: "User",
-            default: null
+        user: {
+          type: Types.ObjectId,
+          ref: "User",
+          default: null,
         },
         status: {
-            type: String,
-            enum: Object.values(taskStatus),
-            default: taskStatus.PENDING,
-        }
+          type: String,
+          enum: Object.values(taskStatus),
+          default: taskStatus.PENDING,
+        },
+      },
+    ],
+    notes: [
+      {
+        type: Types.ObjectId,
+        ref: "Note",
       },
     ],
   },
