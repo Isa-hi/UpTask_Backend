@@ -9,6 +9,7 @@ export interface IProject extends Document {
     projectDescription: string,
     tasks: PopulatedDoc<ITask & Document>[]
     manager: PopulatedDoc<IUser & Document>
+    team: PopulatedDoc<IUser & Document>[]
 }
 
 //Monngoose Schema for Project
@@ -35,7 +36,11 @@ const ProjectSchema = new Schema({
     manager: {
         type: Types.ObjectId,
         ref: "User"
-    }
+    },
+    team: [{
+        type: Types.ObjectId,
+        ref: "User"
+    }]
 },{timestamps: true})
 
 const Project = mongoose.model<IProject>("Project", ProjectSchema);

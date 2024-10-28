@@ -35,5 +35,13 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     } catch (error) {
         res.status(401).send(error.message);
     }
+}
 
+export const hasAuthorization = (req: Request, res: Response, next: NextFunction) => {
+    if(req.user.id.toString() !== req.project.manager.toString()) {
+        const error = new Error("Unauthorized. You are not the project manager.");
+        res.status(403).json({error: error.message});
+        return;
+    }
+    next();
 }

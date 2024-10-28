@@ -21,7 +21,8 @@ export class ProjectController {
         try {
             const projects = await Project.find({
                 $or: [
-                    { manager: {$in: req.user.id }}
+                    { manager: {$in: req.user.id }},
+                    { team: {$in: req.user.id }}
                 ]
             });           
             res.json(projects);
@@ -40,8 +41,8 @@ export class ProjectController {
                 res.status(404).json('Project not found');
                 return;
             }
-            if(project.manager.toString() !== req.user.id.toString()) {
-                res.status(401).json('Unauthorized. Only the project manager can view this project');
+            if(project.manager.toString() !== req.user.id.toString() && !project.team.includes(req.user.id.toString())) {
+                res.status(401).json('Unauthorized. Only the project manager or team members can view this project');
                 return;
             }
             res.json(project);
