@@ -154,7 +154,6 @@ router.delete(
 
 router.post(
   "/:projectId/tasks/:taskId/status",
-  hasAuthorization,
   param("taskId").isMongoId().withMessage("Invalid task ID"),
   body("status")
     .isString()
