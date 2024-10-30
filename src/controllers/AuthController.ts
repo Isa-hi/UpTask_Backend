@@ -264,4 +264,16 @@ export class AuthController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  static checkPassword = async (req: Request, res: Response) => {
+    const { password } = req.body;
+    const user = await User.findById(req.user.id);
+    const passwordMatch = await comparePasswords(password, user.password);
+    if(!passwordMatch) {
+      res.status(401).json({ error: "Invalid password" });
+      return;
+    }
+    res.json('Password is correct');
+  }
+
 }
