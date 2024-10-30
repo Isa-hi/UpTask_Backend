@@ -31,54 +31,95 @@ router.post(
   AuthController.createAccount
 );
 
-router.post('/confirm-account',
-  body('token').isString().notEmpty().withMessage('Token is required'),
+router.post(
+  "/confirm-account",
+  body("token").isString().notEmpty().withMessage("Token is required"),
   handleInputErrors,
   AuthController.confirmAccount
-)
+);
 
-router.post('/login',
-  body('email').isEmail().withMessage('Invalid email'),
-  body('password').isString().notEmpty().withMessage('Password is required'),
+router.post(
+  "/login",
+  body("email").isEmail().withMessage("Invalid email"),
+  body("password").isString().notEmpty().withMessage("Password is required"),
   handleInputErrors,
   AuthController.login
-)
+);
 
-router.post('/request-code',
-  body('email').isEmail().withMessage('Invalid email'),
+router.post(
+  "/request-code",
+  body("email").isEmail().withMessage("Invalid email"),
   handleInputErrors,
   AuthController.resendVerificationEmail
-)
+);
 
-router.post('/forgot-password',
-  body('email').isEmail().withMessage('Invalid email'),
+router.post(
+  "/forgot-password",
+  body("email").isEmail().withMessage("Invalid email"),
   handleInputErrors,
   AuthController.requestPasswordReset
-)
+);
 
-router.post('/validate-token',
-  body('token').isString().notEmpty().withMessage('Token is required'),
+router.post(
+  "/validate-token",
+  body("token").isString().notEmpty().withMessage("Token is required"),
   handleInputErrors,
   AuthController.validatePasswordResetToken
-)
+);
 
-router.post('/update-password/:token',
-  param('token').isString().notEmpty().withMessage('Token is required'),
-  body('password')
+router.post(
+  "/update-password/:token",
+  param("token").isString().notEmpty().withMessage("Token is required"),
+  body("password")
     .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long')
+    .withMessage("Password must be at least 6 characters long")
     .notEmpty()
-    .withMessage('Password is required'),
-  body('password_confirmation').custom((value, { req }) => {
+    .withMessage("Password is required"),
+  body("password_confirmation").custom((value, { req }) => {
     if (value !== req.body.password) {
-      throw new Error('Password confirmation does not match password');
+      throw new Error("Password confirmation does not match password");
     }
     return true;
   }),
   handleInputErrors,
   AuthController.updatePassword
-)
+);
 
-router.get('/user', authenticate, AuthController.user)
+router.get("/user", authenticate, AuthController.user);
+
+/** Profile */
+router.post(
+  "/profile",
+  authenticate,
+  body("name")
+    .isString()
+    .withMessage("Name must be a string")
+    .isLength({ min: 3 })
+    .withMessage("Name must be at least 3 characters long"),
+  body("email").isEmail().withMessage("Invalid email"),
+  AuthController.updateProfile
+);
+
+router.post(
+  "/update-password",
+  authenticate,
+  body("current_password")
+    .isString()
+    .notEmpty()
+    .withMessage("Current password is required"),
+  body("password")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters long")
+    .notEmpty()
+    .withMessage("Password is required"),
+  body("password_confirmation").custom((value, { req }) => {
+    if (value !== req.body.password) {
+      throw new Error("Password confirmation does not match password");
+    }
+    return true;
+  }),
+  handleInputErrors,
+  AuthController.updateCurrentUserPassword
+)
 
 export default router;

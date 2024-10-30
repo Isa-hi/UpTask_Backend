@@ -227,4 +227,41 @@ export class AuthController {
       res.json(req.user);
       return 
   }
+
+  static updateProfile = async (req: Request, res: Response) => {
+    const { name, email } = req.body;
+    const userExists = await User.findOne({email});
+    if(userExists && userExists.id.toString() !== req.user.id.toString()) {
+      res.status(409).json({ error: "User already exists" });
+      return;
+    }
+    req.user.name = name;
+    req.user.email = email;
+
+    try {
+      await req.user.save();
+      res.json('Profile updated successfully');
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  static updateCurrentUserPassword = async (req: Request, res: Response) => {
+    const { current_password, password } = req.body;
+
+    const user = await User.findById(req.user.id);
+    const passwordMatch = await comparePasswords(current_password, user.password);
+    
+    if(!passwordMatch) {
+      res.status(401).json({ error: "Invalid password" });
+      return;
+    }
+    try {
+      req.user.password = await hashPassword(password);
+      await req.user.save();
+      res.json('Password updated successfully');
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
