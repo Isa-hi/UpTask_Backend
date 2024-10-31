@@ -52,18 +52,9 @@ export class ProjectController {
     }
 
     static updateProject = async (req: Request, res: Response) => {
-        const { id } = req.params;
         try {
-            const project = await Project.findByIdAndUpdate(id, req.body);
-            if (!project) {
-                res.status(404).send('Project not found');
-                return;
-            }
-            if(project.manager.toString() !== req.user.id.toString()) {
-                res.status(401).json('Unauthorized. Only the project manager can update this project');
-                return;
-            }
-            project.save();
+            const project = await Project.findByIdAndUpdate(req.project.id, req.body);
+            await project.save();
             res.send('Project updated successfully');
         } catch (error) {
             console.log(error);
@@ -71,18 +62,8 @@ export class ProjectController {
     }
 
     static deleteProject = async (req: Request, res: Response) =>  {
-        const { id } = req.params;
         try {
-            const project = await Project.findById(id);
-            if (!project) {
-                res.status(404).send('Project not found');
-                return;
-            }
-            if(project.manager.toString() !== req.user.id.toString()) {
-                res.status(401).json('Unauthorized. Only the project manager can delete this project');
-                return;
-            }
-            await project.deleteOne();
+            await req.project.deleteOne();
             res.send('Project deleted successfully');
         } catch (error) {
             console.log(error);

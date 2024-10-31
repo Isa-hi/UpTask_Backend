@@ -53,9 +53,12 @@ router.get(
   ProjectController.getProjectById
 );
 
+/* ROUTES FOR TASK */
+router.param("projectId", validateProjectExists);
+
 router.put(
-  "/:id",
-  param("id").isMongoId().withMessage("Invalid project ID"),
+  "/:projectId",
+  param("projectId").isMongoId().withMessage("Invalid project ID"),
   body("projectName")
     .isString()
     .withMessage("Name must be a string")
@@ -78,18 +81,17 @@ router.put(
     .notEmpty()
     .withMessage("Client name is required"),
   handleInputErrors,
+  hasAuthorization,
   ProjectController.updateProject
 );
 
 router.delete(
-  "/:id",
-  param("id").isMongoId().withMessage("Invalid project ID"),
+  "/:projectId",
+  param("projectId").isMongoId().withMessage("Invalid project ID"),
   handleInputErrors,
+  hasAuthorization,
   ProjectController.deleteProject
 );
-
-/* ROUTES FOR TASK */
-router.param("projectId", validateProjectExists);
 
 router.post(
   "/:projectId/tasks",
